@@ -242,7 +242,32 @@ def lm_inter():
 
     h.wait_qsub()
 
-    # score systems
+    # generate streams
+    for sys, lm in zip(sys_list, lm_list):
+        stream = '{sys}/stream'.format(sys=sys)
+        lplex(stream, lm, 'lib/texts/dev03.dat')
+
+    # read stream
+    p_lists = []
+    for sys in sys_list:
+        stream = '{sys}/stream'.format(sys=sys)
+        p_lists.append(read_stream(stream))
+
+    # estimate weight
+    weights = estimate_weights(p_lists)
+
+    # merge LMs
+    lm_int = 'my_lms/lm_int_dev03'
+    lmerge(weights, lm_int)
+
+    # generate mlf using interpolated LM
+    sys_int = 'plp-tglm_int_dev03'
+    lmrescore_batch(dev_set, lm_int, sys_int)
+    lmrescore_batch(eval_set, lm_int, sys_int)
+
+    h.wait_qsub()
+
+    # score provided LMs
     for sys in sys_list:
         out += '{sys} {show_set} score result\n'.format(
             sys=sys,
@@ -272,56 +297,31 @@ def lm_inter():
         )
         out += lplex2(lm, 'lib/texts/eval03.dat') + '\n'
 
-    # generate streams
-    for sys, lm in zip(sys_list, lm_list):
-        stream = '{sys}/stream'.format(sys=sys)
-        lplex(stream, lm, 'lib/texts/dev03.dat')
-
-    # read stream
-    p_lists = []
-    for sys in sys_list:
-        stream = '{sys}/stream'.format(sys=sys)
-        p_lists.append(read_stream(stream))
-
-    # estimate weight
-    weights = estimate_weights(p_lists)
-
-    # merge LMs
-    lm = 'my_lms/lm_int_dev03'.format(show_set=dev_set)
-    lmerge(weights, lm)
-
-    # generate mlf using interpolated LM
-    sys = 'plp-tglm_int_dev03'
-    lmrescore_batch(dev_set, lm, sys)
-    lmrescore_batch(eval_set, lm, sys)
-
-    h.wait_qsub()
-
     # score the interpolated LM
     out += '{sys} {show_set} score result\n'.format(
-        sys=sys,
+        sys=sys_int,
         show_set=dev_set
     )
-    out += score(sys, dev_set) + '\n'
+    out += score(sys_int, dev_set) + '\n'
 
     out += '{sys} {show_set} score result\n'.format(
-        sys=sys,
+        sys=sys_int,
         show_set=eval_set
     )
-    out += score(sys, eval_set) + '\n'
+    out += score(sys_int, eval_set) + '\n'
 
     # fin the perplexity of the interpolated LM
     out += '{sys} {show_set} perplexity\n'.format(
-        sys=sys,
+        sys=sys_int,
         show_set=dev_set
     )
-    out += lplex2(lm, 'lib/texts/dev03.dat') + '\n'
+    out += lplex2(lm_int, 'lib/texts/dev03.dat') + '\n'
 
     out += '{sys} {show_set} perplexity\n'.format(
-        sys=sys,
+        sys=sys_int,
         show_set=eval_set
     )
-    out += lplex2(lm, 'lib/texts/eval03.dat') + '\n'
+    out += lplex2(lm_int, 'lib/texts/eval03.dat') + '\n'
 
     # write result to file
     f = open('report/inter-03.txt', 'w')
@@ -338,37 +338,40 @@ def lm_inter_show_specific():
     sys_list = ['plp-tglm1', 'plp-tglm2', 'plp-tglm3', 'plp-tglm4', 'plp-tglm5']
     out = ''
 
-    # convert .mlf to .dat for stream generation
-    batch_mlf2dat(sys_int, eval_set)
-
-    for show in h.SHOWLIST[eval_set]:
-        # generate streams
-        for sys, lm in zip(sys_list, lm_list):
-            stream = '{sys}/{show}/stream'.format(
-                sys=sys,
-                show=show
-            )
-            dat_file = "{sys_int}/{show}/rescore/rescore.dat".format(
-                sys_int=sys_int,
-                show=show
-            )
-            lplex(stream, lm, dat_file)
-
-        # read stream
-        p_lists = []
-        for sys in sys_list:
-            stream = '{sys}/{show}/stream'.format(
-                sys=sys,
-                show=show
-            )
-            p_lists.append(read_stream(stream))
-
-        # estimate weight
-        weights = estimate_weights(p_lists)
-
-        # merge LMs
-        lm = 'my_lms/lm_int_{show}'.format(show=show)
-        lmerge(weights, lm)
+    # # generate mlf using interpolated LM
+    # lmrescore_batch(dev_set, lm_int, sys_int)
+    #
+    # # convert .mlf to .dat for stream generation
+    # batch_mlf2dat(sys_int, eval_set)
+    #
+    # for show in h.SHOWLIST[eval_set]:
+    #     # generate streams
+    #     for sys, lm in zip(sys_list, lm_list):
+    #         stream = '{sys}/{show}/stream'.format(
+    #             sys=sys,
+    #             show=show
+    #         )
+    #         dat_file = "{sys_int}/{show}/rescore/rescore.dat".format(
+    #             sys_int=sys_int,
+    #             show=show
+    #         )
+    #         lplex(stream, lm, dat_file)
+    #
+    #     # read stream
+    #     p_lists = []
+    #     for sys in sys_list:
+    #         stream = '{sys}/{show}/stream'.format(
+    #             sys=sys,
+    #             show=show
+    #         )
+    #         p_lists.append(read_stream(stream))
+    #
+    #     # estimate weight
+    #     weights = estimate_weights(p_lists)
+    #
+    #     # merge LMs
+    #     lm = 'my_lms/lm_int_{show}'.format(show=show)
+    #     lmerge(weights, lm)
 
     # generate mlf using interpolated LM
     sys = 'plp-tglm_int-show-specific'
@@ -376,18 +379,18 @@ def lm_inter_show_specific():
 
     h.wait_qsub()
 
-    # score the interpolated LM
+    # score the show-specifc LMs
     out += '{sys} {show_set} score result\n'.format(
         sys=sys,
         show_set=eval_set
     )
     out += score(sys, eval_set) + '\n'
 
-    # find the perplexity of the interpolated LM
+    # find the perplexity of the show-specifc LMs for each show
     for show in h.SHOWLIST[eval_set]:
         lm = 'my_lms/lm_int_{show}'.format(show=show)
-        dat_file = "{sys_int}/{show}/rescore/rescore.dat".format(
-            sys_int=sys_int,
+        dat_file = "{sys}/{show}/rescore/rescore.dat".format(
+            sys=sys_int,
             show=show
         )
         out += '{sys} {show_set} perplexity\n'.format(
@@ -396,13 +399,25 @@ def lm_inter_show_specific():
         )
         out += lplex2(lm, dat_file) + '\n'
 
+    # find the perplexity of the interpolated LM for each show
+    for show in h.SHOWLIST[eval_set]:
+        dat_file = "{sys}/{show}/rescore/rescore.dat".format(
+            sys=sys_int,
+            show=show
+        )
+        out += '{sys} {show_set} perplexity\n'.format(
+            sys=sys_int,
+            show_set=eval_set
+        )
+        out += lplex2(lm_int, dat_file) + '\n'
+
     # write result to file
     f = open('report/inter-03_show_specific.txt', 'w')
     f.write(out)
     f.close()
 
 def main():
-    lm_inter()
+    # lm_inter()
     lm_inter_show_specific()
 
 if __name__ == '__main__':

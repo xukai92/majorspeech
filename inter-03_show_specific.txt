@@ -61,3 +61,63 @@ Lang model  requested  exact backed    n/a     mean    stdev
     bigram       2318  83.3%  16.7%   0.0%    -6.44     3.13
    trigram       4559  49.2%  33.8%  17.0%    -5.10     3.14
 
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 174.8062, var 10.3215, utterances 127, words predicted 4366
+num tokens 4493, OOV 0, OOV rate 0.00% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2269  82.7%  17.2%   0.0%    -6.47     3.27
+   trigram       4366  48.0%  33.1%  18.9%    -5.16     3.21
+
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 171.8765, var 11.2908, utterances 129, words predicted 4886
+num tokens 5015, OOV 0, OOV rate 0.00% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2496  81.6%  18.4%   0.0%    -6.71     3.34
+   trigram       4886  48.9%  32.1%  19.0%    -5.15     3.36
+
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 166.1754, var 10.7224, utterances 145, words predicted 5294
+num tokens 5439, OOV 0, OOV rate 0.00% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2758  83.9%  16.1%   0.0%    -6.54     3.20
+   trigram       5294  47.9%  33.5%  18.6%    -5.11     3.27
+
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 236.2753, var 11.3554, utterances 183, words predicted 4625
+num tokens 4809, OOV 1, OOV rate 0.02% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2653  79.9%  20.1%   0.0%    -6.77     3.29
+   trigram       4625  42.6%  33.7%  23.7%    -5.46     3.37
+
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 201.3105, var 11.4205, utterances 162, words predicted 4553
+num tokens 4716, OOV 1, OOV rate 0.02% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2493  81.1%  18.9%   0.0%    -6.70     3.33
+   trigram       4553  45.2%  31.8%  22.9%    -5.30     3.38
+
+plp-tglm_int_dev03 eval03 perplexity
+LPlex test #0: 3-gram
+perplexity 168.7568, var 9.8303, utterances 127, words predicted 4559
+num tokens 4686, OOV 0, OOV rate 0.00% (excl. </s>)
+
+Access statistics for my_lms/lm_int_dev03:
+Lang model  requested  exact backed    n/a     mean    stdev
+    bigram       2318  83.3%  16.7%   0.0%    -6.47     3.11
+   trigram       4559  49.2%  33.8%  17.0%    -5.13     3.14
+
