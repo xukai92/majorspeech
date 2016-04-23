@@ -1,0 +1,28 @@
+# 5.4.6
+# i) using the global, dev03 tuned, interpolation weights (from (3)) generate the 1-best hypotheses;
+# this step is done in the 5.4.5
+# , and the results are stored in the corresponding dev folders in plp-tglm_int
+
+# ii) map the 1-best hypotheses to an appropriate text data format to train the interpolation weights;
+# this is done by converting the mlf files to .dat files
+
+# iii) compute interpolation weights using the data using the mapped hypotheses in ii), and merge the LMs;
+
+# run the following command to generate streams for each show and each language model
+# base/bin/LPlex -C lib/cfgs/hlm.cfg -s stream -u -t lms/lm1 lib/texts/dev03.dat
+
+# iv) apply the new show-specifc LM to the lattices.
+# base/bin/LMerge -C lib/cfgs/hlm.cfg -i 0.6 lms/lm2 -i 0.1 lms/lm3 lib/wlists/train.lst lms/lm1 lm_int
+
+# w_dict = {'eval03_DEV015-20010225-XX0900':
+#           [0.24472594018952235, 0.13317904702881725, 0.1440927688623227, 0.06849029257497409, 0.40929241237619723],
+#           'eval03_DEV014-20010221-XX1830':
+#           [0.4212825979101972, 0.04930039652691214, 0.23251847416036353, 0.09916000519946955, 0.19752235672618715],
+#           'eval03_DEV016-20010228-XX2100':
+#           [0.4070774768379272, 0.2150202620204508, 0.07676296462686798, 0.20759426665429326, 0.0933256835125806],
+#           'eval03_DEV012-20010217-XX1000':
+#           [0.3483917738542753, 0.032022213347708724, 0.15801135796982085, 0.057185195399993144, 0.404184876776809],
+#           'eval03_DEV013-20010220-XX2000':
+#           [0.39524107026204536, 0.06711321944125913, 0.11549352446050926, 0.1466183354071699, 0.27534492165516194],
+#           'eval03_DEV011-20010206-XX1830':
+#           [0.448326864380132, 0.07452711788392193, 0.2288566427016197, 0.06881494618318533, 0.17924533377668556]}
