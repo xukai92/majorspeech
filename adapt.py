@@ -75,7 +75,7 @@ def main():
                 cmd = HMMADAPT.format(
                     adapt=adapt,
                     show=show,
-                    model=smodel,
+                    smodel=smodel,
                     amodel=amodel,
                     modeltype=modeltype
                 )
