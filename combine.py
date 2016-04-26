@@ -85,17 +85,26 @@ def cost(s_entry, t_entry):
         return 0
 
     if s_entry.tokens[0] == '!NULL':     # ins
-        return len(t_entry.tokens[0]) + 20
+        return len(t_entry.tokens[0])
     elif t_entry.tokens[0] == '!NULL':   # del
-        return len(s_entry.tokens[0]) + 20
+        return len(s_entry.tokens[0])
 
-    # TODO: include
+    # gap between two entries
     if a <= c and b <= c:
         gap = c - b
     elif a >= d and b >= d:
         gap = a - d
     else:
         gap = 0
+
+    # overlap ratio
+    if gap > 0:
+        overlap_ratio = 0
+    else:
+        overlap_ratio = min(abs(a - d), abs(b - c)) / max(b - a, d - c)
+        # print a,b,c,d,overlap_ratio
+        # if overlap_ratio > 0:
+        #     exit(1)
 
     # gap = abs((b - a) / 2 - (d - c) / 2)
 
@@ -104,7 +113,7 @@ def cost(s_entry, t_entry):
     else:
 
         edit_distance, _, _ = compute_edit_distance([''] + list(s_entry.tokens[0]), [''] + list(t_entry.tokens[0]))
-        return edit_distance
+        return edit_distance - overlap_ratio * len(s_entry.tokens[0])
 
 def compute_distance(s_list, t_list):
     '''
