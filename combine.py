@@ -5,15 +5,10 @@ import numpy as np
 # command constants
 CNRESCORE = './scripts/cnrescore.sh {show} {model} decode {model}'
 CNRESCORE2 = './scripts/cnrescore.sh {show} {model} decode-hybrid {model}' # decode/decode-hybrid
-
 CNC2MLF = 'python /home/kx216/MLSALT11/iSpeech/final/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/cnc.mlf'
-
 CNC2MLF2 = 'python /home/kx216/MLSALT11/iSpeech/final/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/cnc.mlf'
-
 MAPTREE = 'base/conftools/smoothtree-mlf.pl {tree} {mlf_in} > {mlf_out}'
-
-COMBINE1BEST = 'python /home/kx216/MLSALT11/iSpeech/final/combine_core.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf'
-
+COMBINECNC = 'python /home/kx216/MLSALT11/iSpeech/final/merge.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf'
 COMBINE1BEST = 'python /home/kx216/MLSALT11/iSpeech/final/combine_core.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf'
 
 def print_table(table):
@@ -345,119 +340,6 @@ def align(source_mlf, target_mlf, cost=None):
         aligned_mlfs[stream] = aligned_stream
     return aligned_mlfs
 
-def main():
-    source_mlf_file = 'plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
-    target_mlf_file = 'grph-plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
-    target_mlf, source_mlf  = read_mlf(source_mlf_file), read_mlf(target_mlf_file)
-    # compute_WER(source_mlf, target_mlf)
-    #
-    aligned_mlfs = align_mlf(source_mlf, target_mlf)
-    # aa = aligned_mlfs['DEV001-20010117-XX2000-en_MFWXXXX_0170731_0172865.rec']
-    # for e in aa:
-    #     e.sort()
-    #     e.determinise()
-    #     print e.tokens[0] == '!NULL'
-    #     print str(e)
-    # exit(1)
-    write_mlf(aligned_mlfs, 'plp-bg/dev03_DEV001-20010117-XX2000/combined/')
-
-def test():
-    e1 = Entry('25800000 32000000 INCLUDING 0.999956')
-    e2 = Entry('32000000 32900000 INCLUDING 0.999996')
-
-
-    print cost(e1, e2)
-    print cost(e1, NULL)
-
-    e = Entry('13100000 19100000 MILLY_<ALTSTART>_MOLLY_<ALT>_MILITARY_<ALTEND> 0.97_0.99_1.00')
-    print(e)
-    e.sort()
-    print(e)
-    e.determinise()
-    print(e)
-    exit(1)
-
-def experiment():
-    print 'System Combination'
-
-    # model constants
-    MODELS = ['plp-adapt-int', 'tandem-adapt-int', 'grph-tandem-adapt-int', 'hybrid-int']
-
-    # combination
-    showset = 'YTBEeval'
-    print 'working on show set: {showset}'.format(showset=showset)
-
-    for model in MODELS:
-        for show in h.SHOWLIST[showset]:
-            if model == 'hybrid-int':
-                cmd = CNRESCORE.format(show=show,
-                                       model=model)
-            else:
-                cmd = CNRESCORE2.format(show=show,
-                                        model=model)
-            print 'Running command:\n  {cmd}'.format(cmd=cmd)
-            os.system(cmd)
-
-    h.wait_qsub()
-
-    cnc = False
-
-    if cnc:
-
-        for model in MODELS:
-            for show in h.SHOWLIST[showset]:
-                if model == 'hybrid-int':
-                    cmd = CNC2MLF.format(show=show,
-                                         model=model)
-                else:
-                    cmd = CNC2MLF2.format(show=show,
-                                          model=model)
-                print 'Running command:\n  {cmd}'.format(cmd=cmd)
-                os.system(cmd)
-
-    else:
-
-        for model in MODELS:
-            for show in h.SHOWLIST[showset]:
-                if model == 'hybrid-int':
-                    mlf_in = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/rescore.mlf'.format(model=model,
-                                                                                                        show=show)
-                    mlf_out = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/rescore_mapped.mlf'.format(model=model,
-                                                                                                                show=show)
-                else:
-                    mlf_in = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/rescore.mlf'.format(model=model,
-                                                                                                               show=show)
-                    mlf_out = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/rescore_mapped.mlf'.format(model=model,
-                                                                                                                       show=show)
-                if model == 'hybrid-int':
-                    modeltype = 'hybrid'
-                else:
-                    modeltype = str(model[:-10])
-                tree = 'lib/trees/{modeltype}-bg_decode_cn.tree'.format(modeltype=modeltype)
-                cmd = MAPTREE.format(tree=tree,
-                                     mlf_in=mlf_in,
-                                     mlf_out=mlf_out)
-                print 'Running command:\n  {cmd}'.format(cmd=cmd)
-                os.system(cmd)
-
-    h.wait_qsub()
-
-    if cnc:
-        for show in h.SHOWLIST[showset]:
-            cmd = COMBINECN.format(show=show)
-            print 'Running command:\n  {cmd}'.format(cmd=cmd)
-            os.system(cmd)
-    else:
-
-        for show in h.SHOWLIST[showset]:
-            cmd = COMBINE1BEST.format(show=show)
-            print 'Running command:\n  {cmd}'.format(cmd=cmd)
-            os.system(cmd)
-
-if __name__ == '__main__':
-    main()
-    # test()
-
 def cn2mlf(cn_folder, mlf_file):
     '''
     convert confusion network to .mlf file
@@ -555,3 +437,135 @@ def cn2mlf(cn_folder, mlf_file):
     fout = open(mlf_file, 'w')
     fout.write(out)
     fout.close()
+
+def main():
+    source_mlf_file = 'plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
+    target_mlf_file = 'grph-plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
+    target_mlf, source_mlf  = read_mlf(source_mlf_file), read_mlf(target_mlf_file)
+    # compute_WER(source_mlf, target_mlf)
+    #
+    aligned_mlfs = align_mlf(source_mlf, target_mlf)
+    # aa = aligned_mlfs['DEV001-20010117-XX2000-en_MFWXXXX_0170731_0172865.rec']
+    # for e in aa:
+    #     e.sort()
+    #     e.determinise()
+    #     print e.tokens[0] == '!NULL'
+    #     print str(e)
+    # exit(1)
+    write_mlf(aligned_mlfs, 'plp-bg/dev03_DEV001-20010117-XX2000/combined/')
+
+def test():
+    e1 = Entry('25800000 32000000 INCLUDING 0.999956')
+    e2 = Entry('32000000 32900000 INCLUDING 0.999996')
+
+
+    print cost(e1, e2)
+    print cost(e1, NULL)
+
+    e = Entry('13100000 19100000 MILLY_<ALTSTART>_MOLLY_<ALT>_MILITARY_<ALTEND> 0.97_0.99_1.00')
+    print(e)
+    e.sort()
+    print(e)
+    e.determinise()
+    print(e)
+    exit(1)
+
+def experiment():
+    print 'System Combination'
+
+    # model constants
+    MODELS = ['plp-adapt-int', 'tandem-adapt-int', 'grph-tandem-adapt-int', 'hybrid-int']
+
+    # combination
+    showset = 'dev03'
+    print 'working on show set: {showset}'.format(showset=showset)
+
+    for model in MODELS:
+        for show in h.SHOWLIST[showset]:
+            if model == 'hybrid-int':
+                cmd = CNRESCORE.format(
+                    show=show,
+                    model=model
+                )
+            else:
+                cmd = CNRESCORE2.format(
+                    show=show,
+                    model=model
+                )
+            print 'Running command:\n  {cmd}'.format(cmd=cmd)
+            os.system(cmd)
+
+    h.wait_qsub()
+
+    cnc = False
+
+    if cnc:
+
+        for model in MODELS:
+            for show in h.SHOWLIST[showset]:
+                if model == 'hybrid-int':
+                    cmd = CNC2MLF.format(
+                        show=show,
+                        model=model
+                    )
+                else:
+                    cmd = CNC2MLF2.format(
+                        show=show,
+                        model=model
+                    )
+                print 'Running command:\n  {cmd}'.format(cmd=cmd)
+                os.system(cmd)
+
+    else:
+
+        for model in MODELS:
+            for show in h.SHOWLIST[showset]:
+                if model == 'hybrid-int':
+                    mlf_in = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/rescore.mlf'.format(
+                        model=model,
+                        show=show
+                    )
+                    mlf_out = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/rescore_mapped.mlf'.format(
+                        model=model,
+                        show=show
+                    )
+                else:
+                    mlf_in = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/rescore.mlf'.format(
+                        model=model,
+                        show=show
+                    )
+                    mlf_out = '/home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/rescore_mapped.mlf'.format(
+                        model=model,
+                        show=show
+                    )
+                if model == 'hybrid-int':
+                    modeltype = 'hybrid'
+                else:
+                    modeltype = str(model[:-10])
+                tree = 'lib/trees/{modeltype}-bg_decode_cn.tree'.format(modeltype=modeltype)
+                cmd = MAPTREE.format(
+                    tree=tree,
+                    mlf_in=mlf_in,
+                    mlf_out=mlf_out
+                )
+                print 'Running command:\n  {cmd}'.format(cmd=cmd)
+                os.system(cmd)
+
+    h.wait_qsub()
+
+    if cnc:
+        for show in h.SHOWLIST[showset]:
+            cmd = COMBINECN.format(show=show)
+            print 'Running command:\n  {cmd}'.format(cmd=cmd)
+            os.system(cmd)
+    else:
+
+        for show in h.SHOWLIST[showset]:
+            cmd = COMBINE1BEST.format(show=show)
+            print 'Running command:\n  {cmd}'.format(cmd=cmd)
+            os.system(cmd)
+
+if __name__ == '__main__':
+    # main()
+    # test()
+    experiment()
