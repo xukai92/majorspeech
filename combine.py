@@ -5,11 +5,11 @@ import numpy as np
 # command constants
 CNRESCORE = './scripts/cnrescore.sh {show} {model} decode {model}'
 CNRESCORE2 = './scripts/cnrescore.sh {show} {model} decode-hybrid {model}' # decode/decode-hybrid
-CNC2MLF = 'python /home/kx216/MLSALT11/iSpeech/final/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/cnc.mlf'
-CNC2MLF2 = 'python /home/kx216/MLSALT11/iSpeech/final/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/cnc.mlf'
+CNC2MLF = 'python /home/kx216/MLSALT11/iSpeech/report/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode_cn/lattices/cnc.mlf'
+CNC2MLF2 = 'python /home/kx216/MLSALT11/iSpeech/report/cnc2mlf.py /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/ /home/kx216/MLSALT11/iSpeech/{model}/{show}/decode-hybrid_cn/lattices/cnc.mlf'
 MAPTREE = 'base/conftools/smoothtree-mlf.pl {tree} {mlf_in} > {mlf_out}'
-COMBINECNC = 'python /home/kx216/MLSALT11/iSpeech/final/merge.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf'
-COMBINE1BEST = 'python /home/kx216/MLSALT11/iSpeech/final/combine_core.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf'
+COMBINECNC = 'python /home/kx216/MLSALT11/iSpeech/report/combine_core.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/lattices/cnc.mlf'
+COMBINE1BEST = 'python /home/kx216/MLSALT11/iSpeech/report/combine_core.py /home/kx216/MLSALT11/iSpeech/combined/{show}/decode/rescore.mlf /home/kx216/MLSALT11/iSpeech/hybrid-int/{show}/decode_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/plp-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf /home/kx216/MLSALT11/iSpeech/grph-tandem-adapt-int/{show}/decode-hybrid_cn/rescore.mlf'
 
 def print_table(table):
     for row in table:
@@ -97,11 +97,6 @@ def cost(s_entry, t_entry):
         overlap_ratio = 0
     else:
         overlap_ratio = min(abs(a - d), abs(b - c)) / max(b - a, d - c)
-        # print a,b,c,d,overlap_ratio
-        # if overlap_ratio > 0:
-        #     exit(1)
-
-    # gap = abs((b - a) / 2 - (d - c) / 2)
 
     if gap > 0.2:   # unmatched
         return 1000
@@ -182,9 +177,6 @@ def align_mlf(source_mlf, target_mlf):
     for stream in stream_list:
         source_seq = [NULL] + source_mlf[stream]
         target_seq = [NULL] + target_mlf[stream]
-        # if stream == 'DEV001-20010117-XX2000-en_MFWXXXX_0002506_0003705.rec':
-        #     source_seq = source_seq[:10]
-        #     target_seq = target_seq[:10]
         edit_distance, table_E, table_T = compute_distance(source_seq, target_seq)
 
         aligned_stream = []
@@ -203,23 +195,6 @@ def align_mlf(source_mlf, target_mlf):
                     entry = Entry(str(source_seq[source_idx]))
                 entry.add(target_seq[target_idx])
 
-            # if stream == 'DEV001-20010117-XX2000-en_MFWXXXX_0002506_0003705.rec':
-            #     print str(source_seq[source_idx]), str(target_seq[target_idx])
-            #     print print_table(table_E)
-            #     exit(1)
-            # if source_idx < 0 and target_idx >= 0:      # ins
-            #     entry = Entry(str(target_mlf[stream][target_idx]))
-            #     entry.tokens = ['!NULL'] + entry.tokens
-            #     entry.scores = [0.2] + entry.scores
-            # elif source_idx >= 0 and target_idx < 0:    # del
-            #     entry = Entry(str(source_mlf[stream][source_idx]))
-            #     entry.add(NULL)
-            # elif source_idx == target_idx:              # hit
-            #     entry = Entry(str(target_mlf[stream][target_idx]))
-            # else:                                       # sub
-            #     entry = Entry(str(source_mlf[stream][source_idx]))
-            #     entry.add(target_mlf[stream][target_idx])
-
             aligned_stream.append(entry)
 
         aligned_mlfs[stream] = aligned_stream
@@ -235,14 +210,8 @@ def write_mlf(aligned_mlfs, output_path):
         for entry in aligned_mlfs[stream]:
             entry = Entry(str(entry))
             if entry.tokens[0] != '!NULL':
-                if entry.tokens[0] == 'OFFENDER' and stream == 'DEV001-20010117-XX2000-en_FFWXXXX_0113251_0115240.rec':
-                    print entry
-                    # exit(1)
                 entry.sort()
                 entry.determinise()
-                if stream == 'DEV001-20010117-XX2000-en_FFWXXXX_0113251_0115240.rec':
-                    print entry
-
                 if entry.tokens[0] != '!NULL':
                     out += str(entry)
                     out += '\n'
@@ -439,22 +408,18 @@ def cn2mlf(cn_folder, mlf_file):
     fout.close()
 
 def main():
+    experiment()
+    test()
+    test2()
+
+def test():
     source_mlf_file = 'plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
     target_mlf_file = 'grph-plp-bg/dev03_DEV001-20010117-XX2000/decode_cn/rescore.mlf'
     target_mlf, source_mlf  = read_mlf(source_mlf_file), read_mlf(target_mlf_file)
-    # compute_WER(source_mlf, target_mlf)
-    #
     aligned_mlfs = align_mlf(source_mlf, target_mlf)
-    # aa = aligned_mlfs['DEV001-20010117-XX2000-en_MFWXXXX_0170731_0172865.rec']
-    # for e in aa:
-    #     e.sort()
-    #     e.determinise()
-    #     print e.tokens[0] == '!NULL'
-    #     print str(e)
-    # exit(1)
     write_mlf(aligned_mlfs, 'plp-bg/dev03_DEV001-20010117-XX2000/combined/')
 
-def test():
+def test2():
     e1 = Entry('25800000 32000000 INCLUDING 0.999956')
     e2 = Entry('32000000 32900000 INCLUDING 0.999996')
 
@@ -468,7 +433,6 @@ def test():
     print(e)
     e.determinise()
     print(e)
-    exit(1)
 
 def experiment():
     print 'System Combination'
@@ -566,6 +530,4 @@ def experiment():
             os.system(cmd)
 
 if __name__ == '__main__':
-    # main()
-    # test()
-    experiment()
+    main()
